@@ -1,0 +1,7 @@
+*.pyc
+virtual_env
+.vscode
+__pycache__
+*.log
+.DS_Store
+node_modules
