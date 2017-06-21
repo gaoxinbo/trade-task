@@ -37,17 +37,30 @@ def get_connection(passwd):
 
 
 def download_data(conn, symbol):
+    logger.info("fetching " + symbol)
+    s = yahoo_finance.Share(symbol)
+    opt = [] 
+    opt.append(symbol)
+    opt.append(s.get_trade_datetime()[0:10])
+    opt.append(s.get_open())
+    opt.append(s.get_price())
+
     with conn.cursor() as cursor:
-        logger.info("fetching " + symbol)
-        s = yahoo_finance.Share(symbol)
-        opt = [] 
-        opt.append(symbol)
-        opt.append(s.get_trade_datetime()[0:10])
-        opt.append(s.get_open())
-        opt.append(s.get_price())
-        logger.info(opt)
-    
+        query = "select * from daily_price where symbol = %s and trade_date = %s"
+        l = []
+        l.append(symbol)
+        l.append(opt[1])
+
+        cursor.execute(query, l)
+        result = cursor.fetchone()
+        if result:
+            logger.info("skip %s %s" % (l[0], l[1]))
+            return
+
+    with conn.cursor() as cursor:
+        sql = "replace into daily_price (symbol, trade_date, open_price, close_price) values (%s, %s, %s, %s)"
         cursor.execute(sql, opt)
+        logger.info(opt)
         conn.commit()
 
     return
@@ -61,7 +74,6 @@ if __name__ == '__main__':
     logger.info("start...")
     conn = get_connection(sys.argv[1])
 
-    sql = "replace into daily_price (symbol, trade_date, open_price, close_price) values (%s, %s, %s, %s)"
 
     for symbol in config.SYMBOL_LIST:
         try:
