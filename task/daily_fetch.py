@@ -8,6 +8,8 @@ import config
 import yahoo_finance 
 import pymysql
 
+import api
+
 def print_err_and_exit():
     print("Usage: password")
     sys.exit(-1)
@@ -26,6 +28,7 @@ def get_logger():
     logger.addHandler(ch)
 
     return logger
+
  
 
 def get_connection(passwd):
@@ -35,6 +38,36 @@ def get_connection(passwd):
                                  password=passwd)
     return connection
 
+def download_data_v2(conn, symbol):
+    logger.info("fetching " + symbol)
+    data = api.queryDaily(symbol)
+    for item in data:
+      opt = [] 
+      opt.append(symbol)
+      opt.append(item['date'])
+      opt.append(item['open'])
+      opt.append(item['close'])
+
+      with conn.cursor() as cursor:
+          query = "select * from daily_price where symbol = %s and trade_date = %s"
+          l = []
+          l.append(symbol)
+          l.append(opt[1])
+
+          cursor.execute(query, l)
+          result = cursor.fetchone()
+          if result:
+              logger.info("skip %s %s" % (l[0], l[1]))
+              continue 
+
+      with conn.cursor() as cursor:
+          sql = "replace into daily_price (symbol, trade_date, open_price, close_price) values (%s, %s, %s, %s)"
+          cursor.execute(sql, opt)
+          logger.info(opt)
+          conn.commit()
+
+    return
+ 
 
 def download_data(conn, symbol):
     logger.info("fetching " + symbol)
@@ -77,7 +110,7 @@ if __name__ == '__main__':
 
     for symbol in config.SYMBOL_LIST:
         try:
-            download_data(conn, symbol)
+            download_data_v2(conn, symbol)
         except Exception as err:
             logger.info(err)
             continue

@@ -9,5 +9,6 @@ SYMBOL_LIST=[
   'FB',
   'AMZN',
   'AAPL', 
-  '0700.hk'
+  '0700.hk',
+  'JD'
 ]
