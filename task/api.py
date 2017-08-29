@@ -22,6 +22,8 @@ def parse(data):
   l = []
   d = data['Time Series (Daily)']
   for key,value in d.items():
+    if len(key) != 10:
+      continue
     record = {}
     record['date'] = key[0:10]
     record['close'] = value['4. close']
