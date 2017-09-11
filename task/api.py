@@ -26,10 +26,10 @@ def parse(data):
       continue
     record = {}
     record['date'] = key[0:10]
-    record['close'] = value['4. close']
-    record['open'] = value['1. open']
-    record['high'] = value['2. high']
-    record['low'] = value['3. low']
+    record['close'] = str(round(float(value['4. close']),2))
+    record['open'] = str(round(float(value['1. open']),2))
+    record['high'] = str(round(float(value['2. high']),2))
+    record['low'] = str(round(float(value['3. low']),2))
     record['volume'] = value['5. volume']
 
     l.append(record)
